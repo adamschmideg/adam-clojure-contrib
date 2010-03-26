@@ -89,6 +89,3 @@
      "/"
      (fn [request] (str "<html><body><h1>The root</h1></body></html>"))}
     8080))
-
-
-(run-tests)
