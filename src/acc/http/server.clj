@@ -19,13 +19,18 @@
                       (keys url-mappings)))]
       (if matched
         [(url-mappings matched)
-         (rest
-           (re-matches matched url))]
+         (let [groups (re-matches matched url)]
+           (if (vector? groups)
+             (rest groups)
+             []))]
         [nil []])))
   (let [mappings {#"/item/(.*)" "Item",
+                  #"/list/?" "List",
                   #"/" "Root"}]
     (is (= ["Item" ["42"]] 
            (match-url mappings "/item/42")))
+    (is (= ["List" []] 
+           (match-url mappings "/list")))
     (is (= ["Root" []] 
            (match-url mappings "/")))
     (is (= [nil []] 
@@ -71,17 +76,18 @@
       (proxy [HttpHandler] []
         (handle [xchg]
           (try
-      (let [request {:port (.. xchg getLocalAddress getPort)
-         :host (.. xchg getLocalAddress getHostName)
-         :method (. xchg getRequestMethod)
-         :headers (. xchg getRequestHeaders)
-         :query (.. xchg getRequestURI getQuery)
-         :path (.. xchg getRequestURI getPath)}
-      response (handle-request url-mappings request)]
-       (write-response xchg 200 response))
-     (catch Exception e
-       (.printStackTrace e)
-       (write-response xchg 401 (str e)))))))
+            (let [request {:port (.. xchg getLocalAddress getPort)
+                           :host (.. xchg getLocalAddress getHostName)
+                           :method (. xchg getRequestMethod)
+                           :headers (. xchg getRequestHeaders)
+                           :query (.. xchg getRequestURI getQuery)
+                           :path (.. xchg getRequestURI getPath)}
+                 dummy (print "request:" request)
+                 response (handle-request url-mappings request)]
+               (write-response xchg 200 response))
+            (catch Exception e
+               (.printStackTrace e)
+               (write-response xchg 401 (str e)))))))
     (.start))
   (print "Started on " port))
 
