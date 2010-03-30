@@ -14,15 +14,16 @@
 
 (with-test
   (defn match-url [url-mappings url]
-    (let [matched (first 
-                     (filter 
-                       #(re-seq (re-pattern %) url)
-                       (keys url-mappings)))]
-      [(url-mappings matched)
-       (rest 
-         (re-matches (re-pattern matched) url))]))
-  (let [mappings {"/item/(.*)", "Item"
-                  "/", "Root"}]
+    (let [matched (first
+                    (filter #(re-matches % url) 
+                      (keys url-mappings)))]
+      (if matched
+        [(url-mappings matched)
+         (rest
+           (re-matches matched url))]
+        [nil []])))
+  (let [mappings {#"/item/(.*)" "Item",
+                  #"/" "Root"}]
     (is (= ["Item" ["42"]] 
            (match-url mappings "/item/42")))
     (is (= ["Root" []] 
@@ -53,8 +54,8 @@
           (apply fun (cons request args))
           (catch IllegalArgumentException e (str "Args passed:" args)))
         (str "No match: " (:path request)))))
-  (let [mapping {"/foo/(.*)" (fn [request id] (str "Foo " id))
-                 "/bar/(.*)" {:get 
+  (let [mapping {#"/foo/(.*)" (fn [request id] (str "Foo " id))
+                 #"/bar/(.*)" {:get 
                                 (fn [request id] (str "Get bar " id))
                               :post 
                                 (fn [request id] (str "Post bar " id))}}]
@@ -79,6 +80,7 @@
       response (handle-request url-mappings request)]
        (write-response xchg 200 response))
      (catch Exception e
+       (.printStackTrace e)
        (write-response xchg 401 (str e)))))))
     (.start))
   (print "Started on " port))
