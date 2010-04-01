@@ -56,8 +56,8 @@
                 (map? matching) ((keyword (s/lower-case (:method request))) matching))]
       (if fun
         (try
-          (apply fun (cons request args))
-          (catch IllegalArgumentException e (str "Args passed:" args)))
+          (apply fun request args)
+          (catch IllegalArgumentException e (str "Args passed:" args "to" fun)))
         (str "No match: " (:path request)))))
   (let [mapping {#"/foo/(.*)" (fn [request id] (str "Foo " id))
                  #"/bar/(.*)" {:get 
@@ -82,7 +82,7 @@
                            :headers (. xchg getRequestHeaders)
                            :query (.. xchg getRequestURI getQuery)
                            :path (.. xchg getRequestURI getPath)}
-                 dummy (print "request:" request)
+                 dummy (debug "request:" request)
                  response (handle-request url-mappings request)]
                (write-response xchg 200 response))
             (catch Exception e
