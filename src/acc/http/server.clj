@@ -1,6 +1,8 @@
 
 (ns acc.http.server
-  (:use clojure.test)
+  (:use 
+    [clojure.test]
+    [clojure.stacktrace])
   (:require [clojure.contrib.str-utils2 :as s])
   (:import 
     [java.net InetSocketAddress URLDecoder]
@@ -61,7 +63,10 @@
       (if fun
         (try
           (apply fun request args)
-          (catch IllegalArgumentException e (str "Args passed:" args "to" fun)))
+          (catch Exception e 
+            (str "Args passed: " args " to " fun " throws\n"
+              (with-out-str
+                (print-cause-trace e)))))
         (str "No match: " (:path request)))))
   (let [mapping {#"/foo/(.*)" (fn [request id] (str "Foo " id))
                  #"/bar/(.*)" {:get 
