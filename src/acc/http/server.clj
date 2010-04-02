@@ -3,7 +3,7 @@
   (:use clojure.test)
   (:require [clojure.contrib.str-utils2 :as s])
   (:import 
-    [java.net InetSocketAddress]
+    [java.net InetSocketAddress URLDecoder]
     [com.sun.net.httpserver HttpServer HttpHandler]))
 
 (defmacro get-all
@@ -11,6 +11,10 @@
   ([x form & more] `(assoc (get-all ~x ~@more) (keyword '~form) (. ~x ~form))))
 
 ; Based on http://www.java2s.com/Code/Java/Network-Protocol/MinimalHTTPServerbyusingcomsunnethttpserverHttpServer.htm
+
+(defn url-decode
+  [url]
+  (URLDecoder/decode url))
 
 (with-test
   (defn match-url [url-mappings url]
@@ -80,7 +84,7 @@
                            :host (.. xchg getLocalAddress getHostName)
                            :method (. xchg getRequestMethod)
                            :headers (. xchg getRequestHeaders)
-                           :query (.. xchg getRequestURI getQuery)
+                           :query (.. xchg getRequestURI getRawQuery)
                            :path (.. xchg getRequestURI getPath)}
                  dummy (debug "request:" request)
                  response (handle-request url-mappings request)]
