@@ -57,9 +57,9 @@
   (defn handle-request
     [url-mapping request]
     (let [[matching args] (match-url url-mapping (:path request))
-          fun (cond
-                (fn? matching) matching
-                (map? matching) ((keyword (s/lower-case (:method request))) matching))]
+          fun (if (map? matching)
+                ((keyword (s/lower-case (:method request))) matching)
+                matching)]
       (if fun
         (try
           (apply fun request args)
