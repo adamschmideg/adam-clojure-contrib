@@ -1,3 +1,5 @@
 dev
 *.swp
 lib
+adam-clojure-contrib.jar
+pom.xml
